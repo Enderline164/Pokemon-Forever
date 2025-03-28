@@ -43,7 +43,7 @@ This project is being developed **100% by me**, and it is still a work in progre
 
 ## 🎮 **Download & Testing**  
 
-**DEMO Version Release**
+**DEMO Version Release! 🎉**
 
 ---
 
