@@ -1,4 +1,6 @@
-# Classe para representar os personagens
+# ------------------------------- CLASSES BASE -------------------------------
+
+# Classe para representar um personagem
 class Character
   attr_accessor :name, :health, :attack, :defense, :level, :experience, :inventory, :quests
 
@@ -57,6 +59,24 @@ class Character
     puts "#{item} has been added to your inventory."
   end
 
+  def use_item(item)
+    if @inventory.include?(item)
+      case item
+      when "Healing Potion"
+        heal(30)
+        @inventory.delete(item)
+      when "Attack Boost"
+        @attack += 10
+        puts "#{@name}'s attack increased by 10!"
+        @inventory.delete(item)
+      else
+        puts "Unknown item."
+      end
+    else
+      puts "#{item} not found in your inventory."
+    end
+  end
+
   def show_inventory
     puts "Inventory: #{@inventory.join(', ')}"
   end
@@ -101,7 +121,27 @@ class Quest
   end
 end
 
-# Classe para gerenciar batalhas
+# ---------------------------- NOVAS FUNÇÕES E MECÂNICAS ----------------------------
+
+# Classe para o mapa do jogo
+class Map
+  attr_accessor :areas
+
+  def initialize
+    @areas = {
+      "Village" => "You are in a small peaceful village.",
+      "Cave" => "A dark and dangerous cave, full of monsters.",
+      "Forest" => "A dense forest where wild creatures roam.",
+      "Town" => "A bustling town with shops and inns."
+    }
+  end
+
+  def show_area(area)
+    puts @areas[area] || "Area not found."
+  end
+end
+
+# Classe para gerenciar batalhas com um sistema de turnos
 class Battle
   def initialize(player, enemy)
     @player = player
@@ -112,7 +152,7 @@ class Battle
     puts "A battle has started between #{@player.name} and #{@enemy.name}!"
 
     while @player.is_alive? && @enemy.is_alive?
-      puts "Choose an action: 1. Attack 2. Heal 3. Inventory"
+      puts "Choose an action: 1. Attack 2. Heal 3. Inventory 4. Flee"
       action = gets.chomp.to_i
 
       case action
@@ -124,7 +164,16 @@ class Battle
         @enemy.attack_enemy(@player) if @enemy.is_alive?
       when 3
         @player.show_inventory
+        action = gets.chomp.to_i
+        if action == 1
+          puts "Choose item to use:"
+          item = gets.chomp
+          @player.use_item(item)
+        end
         @enemy.attack_enemy(@player) if @enemy.is_alive?
+      when 4
+        puts "#{@player.name} flees the battle!"
+        break
       else
         puts "Invalid action."
       end
@@ -141,10 +190,11 @@ class Battle
   end
 end
 
-# Função para criar uma missão e atribuir ao NPC
+# Função para criar missões e atribuir a NPCs
 def create_quests
   quest1 = Quest.new("Find the Lost Sword", "Retrieve the lost sword from the cave.", "500 Gold")
   quest2 = Quest.new("Defeat the Bandits", "Defeat the bandits terrorizing the town.", "1000 Gold")
+  quest3 = Quest.new("Save the Village", "Defeat the wild beasts in the forest.", "500 Gold, Healing Potion")
 
   npc1 = NPC.new("Guard")
   npc1.offer_quest(quest1)
@@ -152,12 +202,37 @@ def create_quests
   npc2 = NPC.new("Village Elder")
   npc2.offer_quest(quest2)
 
-  return [npc1, npc2]
+  npc3 = NPC.new("Forest Druid")
+  npc3.offer_quest(quest3)
+
+  return [npc1, npc2, npc3]
 end
 
 # Função para criar inimigos
 def create_enemy(name, health, attack, defense)
   Enemy.new(name, health, attack, defense)
+end
+
+# Função para gerar eventos aleatórios no mapa
+def random_event(player)
+  event = rand(1..3)
+  case event
+  when 1
+    puts "#{player.name} encounters a wild enemy!"
+    enemy = create_enemy("Goblin", 50, 10, 5)
+    battle = Battle.new(player, enemy)
+    battle.start
+  when 2
+    puts "#{player.name} finds a treasure chest!"
+    player.add_item("Healing Potion")
+  when 3
+    puts "#{player.name} finds a shop!"
+    puts "Do you want to buy a Boost? (Y/N)"
+    choice = gets.chomp
+    if choice.downcase == 'y'
+      player.add_item("Attack Boost")
+    end
+  end
 end
 
 # Função principal do jogo
@@ -175,6 +250,17 @@ def start_game
     puts "#{npc.name} has the following quests: "
     npc.quests.each { |quest| puts "  - #{quest.name}: #{quest.description}" }
   end
+
+  # Criando o mapa
+  map = Map.new
+
+  # Escolhendo uma área para visitar
+  puts "Where do you want to go? (Village, Cave, Forest, Town)"
+  area = gets.chomp
+  map.show_area(area)
+
+  # Gerando eventos aleatórios
+  random_event(player)
 
   # Escolhendo um inimigo para batalha
   enemy = create_enemy("Dragon", 150, 25, 15)
