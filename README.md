@@ -2,6 +2,8 @@
 
 **Pokémon Forever** is a fangame developed by a single creator, bringing everything that Pokémon fans have always dreamed of in a 2D Pokémon game! With 898 Pokémon available, innovative mechanics, multiple endings, and a reimagined story, this experience will take your Pokémon journey to the next level.  
 
+https://youtu.be/UcyhO92e1dE
+
 ---
 
 ## ✨ **Game Highlights**  
